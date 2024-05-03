@@ -118,20 +118,20 @@ def merge_sysmon_configs(file_list: List[Dict[str, Union[str, int]]], force_grou
             except Exception as e:
                 logging.exception(f"Error parsing version {version} in file {file_path}, skipping file")
                 continue
-            rule_group = tree.find(".//RuleGroup")
-            if force_grouprelation_or:
-                rule_group.set("groupRelation","or")
-            for event in rule_group:
-                event_type = event.tag
-                onmatch = event.get("onmatch")
-                key = (event_type, onmatch)
+            for rule_group in tree.find("./EventFiltering"):
+                if force_grouprelation_or:
+                    rule_group.set("groupRelation","or")
+                for event in rule_group:
+                    event_type = event.tag
+                    onmatch = event.get("onmatch")
+                    key = (event_type, onmatch)
 
-                if key not in event_dict:
-                    event_dict[key] = event
-                    merged_event_filtering.append(rule_group)
-                else:
-                    for child in event:
-                        event_dict[key].append(child)
+                    if key not in event_dict:
+                        event_dict[key] = event
+                        merged_event_filtering.append(rule_group)
+                    else:
+                        for child in event:
+                            event_dict[key].append(child)
         else:
             logging.warning(f"Provided invalid path {file_path}, will not be merged")
 
